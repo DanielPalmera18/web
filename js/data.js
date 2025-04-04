@@ -1,70 +1,53 @@
-// Base de datos mejorada
-const DB_NAME = 'equipos_biomedicos';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+import { 
+  getFirestore, collection, getDocs, 
+  addDoc, doc, deleteDoc, updateDoc, query, where 
+} from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
 
-function getEquipos() {
-    try {
-        const data = localStorage.getItem(DB_NAME);
-        return data ? JSON.parse(data) : [];
-    } catch (error) {
-        console.error("Error al leer equipos:", error);
-        return [];
-    }
+// Configuración de Firebase (usa tus propios valores)
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
+
+// Inicializa Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Funciones de la base de datos
+export async function getEquipos() {
+  const querySnapshot = await getDocs(collection(db, "equipos"));
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-function saveEquipos(equipos) {
-    try {
-        localStorage.setItem(DB_NAME, JSON.stringify(equipos));
-        return true;
-    } catch (error) {
-        console.error("Error al guardar equipos:", error);
-        alert("Error: No se pudieron guardar los datos. Reduzca el tamaño de los archivos.");
-        return false;
-    }
+export async function addEquipo(equipo) {
+  try {
+    const docRef = await addDoc(collection(db, "equipos"), equipo);
+    return docRef.id; // Retorna el ID del documento creado
+  } catch (error) {
+    console.error("Error añadiendo equipo: ", error);
+    return null;
+  }
 }
 
-function getEquipoBySerie(serie) {
-    return getEquipos().find(e => e.serie === serie);
+export async function deleteEquipo(id) {
+  await deleteDoc(doc(db, "equipos", id));
 }
 
-function searchEquipos(term) {
-    const equipos = getEquipos();
-    if (!term) return equipos;
-    
-    return equipos.filter(e => 
-        e.serie.toLowerCase().includes(term.toLowerCase()) ||
-        e.nombre.toLowerCase().includes(term.toLowerCase()) ||
-        e.marca.toLowerCase().includes(term.toLowerCase())
-    );
+export async function updateEquipo(id, nuevosDatos) {
+  await updateDoc(doc(db, "equipos", id), nuevosDatos);
 }
 
-function addEquipo(equipo) {
-    const equipos = getEquipos();
-    
-    // Validación de serie única
-    if (equipos.some(e => e.serie === equipo.serie)) {
-        alert("⚠️ Ya existe un equipo con esta serie");
-        return false;
-    }
-    
-    // Limitar datos pesados
-    const equipoParaGuardar = {
-        ...equipo,
-        certificado_calibracion: null, // No guardar archivos grandes
-        hoja_vida: null
-    };
-    
-    equipos.push(equipoParaGuardar);
-    return saveEquipos(equipos);
-}
-
-function deleteEquipo(serie) {
-    const equipos = getEquipos().filter(e => e.serie !== serie);
-    return saveEquipos(equipos);
-}
-
-function updateEquipo(serie, nuevosDatos) {
-    const equipos = getEquipos().map(e => 
-        e.serie === serie ? { ...e, ...nuevosDatos } : e
-    );
-    return saveEquipos(equipos);
+export async function searchEquipos(term) {
+  const q = query(
+    collection(db, "equipos"),
+    where("serie", ">=", term),
+    where("serie", "<=", term + '\uf8ff')
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
