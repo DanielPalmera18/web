@@ -246,3 +246,41 @@ select {
         font-size: 0.85rem;
     }
 }
+/* Añade esto al final de tu archivo CSS */
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.no-data a {
+    margin-top: 15px;
+    display: inline-block;
+}
+
+/* Mejora para estados de ubicación */
+.estado {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Colores para ubicaciones */
+.uci-adulto { background: #3a86ff; color: white; }
+.uci-neonatal-pediatrica { background: #8338ec; color: white; }
+.hemodinamia { background: #ff006e; color: white; }
+.laboratorio-clinico { background: #fb5607; color: white; }
+.microbiologia { background: #ffbe0b; color: #000; }
+.cirugia { background: #3a86ff; color: white; }
+.otro { background: #8ac926; color: #000; }
