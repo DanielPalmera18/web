@@ -3,49 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalle del Equipo - Equipos Biomédicos</title>
+    <title>Detalle del Equipo</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header>
         <h1>Detalle del Equipo</h1>
         <nav>
-            <a href="dashboard.html" class="btn">🔙 Volver al Dashboard</a>
+            <a href="dashboard.html" class="btn">🔙 Volver</a>
         </nav>
     </header>
 
     <main class="container">
         <div id="equipo-detalle" class="detalle-grid">
-            <!-- Los datos se cargarán con JavaScript -->
+            <!-- Datos cargados por JS -->
         </div>
-        
-        <div class="documentos-container">
-            <h2>📄 Documentos</h2>
-            <div id="documentos" class="documentos-list">
-                <!-- PDFs se cargarán aquí -->
-            </div>
-        </div>
-
         <div class="qr-container">
-            <h2>🔍 Código QR</h2>
-            <img id="qr-image" alt="Código QR del equipo">
+            <img id="qr-image" alt="Código QR">
         </div>
     </main>
 
     <script src="js/data.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Obtener serie desde la URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const serie = urlParams.get('serie');
-            
-            if (!serie) {
-                alert("No se especificó un equipo");
-                window.location.href = "dashboard.html";
-                return;
-            }
-
-            // Buscar equipo
+            const serie = new URLSearchParams(window.location.search).get("serie");
             const equipo = getEquipoBySerie(serie);
             
             if (!equipo) {
@@ -54,96 +35,62 @@
                 return;
             }
 
-            // Mostrar datos
             document.getElementById("equipo-detalle").innerHTML = `
                 <div class="detalle-item">
                     <label>Número de Serie:</label>
-                    <span>${equipo.serie || 'N/A'}</span>
+                    <span>${equipo.serie}</span>
                 </div>
                 <div class="detalle-item">
                     <label>Nombre:</label>
-                    <span>${equipo.nombre || 'N/A'}</span>
+                    <span>${equipo.nombre}</span>
                 </div>
                 <div class="detalle-item">
                     <label>Marca:</label>
-                    <span>${equipo.marca || 'N/A'}</span>
+                    <span>${equipo.marca}</span>
                 </div>
                 <div class="detalle-item">
                     <label>Modelo:</label>
-                    <span>${equipo.modelo || 'N/A'}</span>
+                    <span>${equipo.modelo}</span>
                 </div>
                 <div class="detalle-item">
                     <label>Condición:</label>
-                    <span class="estado ${equipo.condicion ? equipo.condicion.toLowerCase().replace(' ', '-') : ''}">
-                        ${equipo.condicion || 'N/A'}
+                    <span class="estado ${equipo.condicion.toLowerCase().replace(' ', '-')}">
+                        ${equipo.condicion}
                     </span>
                 </div>
                 <div class="detalle-item">
                     <label>Ubicación:</label>
-                    <span>${equipo.ubicacion || 'N/A'}</span>
+                    <span>${equipo.ubicacion}</span>
                 </div>
                 <div class="detalle-item">
                     <label>Último Servicio:</label>
-                    <span>${formatFecha(equipo.fecha_servicio)}</span>
+                    <span>${new Date(equipo.fecha_servicio).toLocaleDateString('es-ES')}</span>
                 </div>
                 <div class="detalle-item">
                     <label>Próximo Servicio:</label>
                     <span class="${new Date(equipo.fecha_proximo) < new Date() ? 'vencido' : ''}">
-                        ${formatFecha(equipo.fecha_proximo)}
-                        ${new Date(equipo.fecha_proximo) < new Date() ? ' ⚠️' : ''}
+                        ${new Date(equipo.fecha_proximo).toLocaleDateString('es-ES')}
                     </span>
+                </div>
+                <div class="detalle-item full-width">
+                    <a href="${equipo.certificado_calibracion}" download="Certificado_${equipo.serie}.pdf" class="btn">
+                        📄 Descargar Certificado
+                    </a>
+                    <a href="${equipo.hoja_vida}" download="HojaVida_${equipo.serie}.pdf" class="btn">
+                        📄 Descargar Hoja de Vida
+                    </a>
                 </div>
             `;
 
-            // Mostrar documentos
-            const documentosContainer = document.getElementById("documentos");
-            if (equipo.certificado_calibracion || equipo.hoja_vida) {
-                documentosContainer.innerHTML = `
-                    ${equipo.certificado_calibracion ? `
-                    <div class="documento-item">
-                        <span>📄 Certificado de Calibración</span>
-                        <a href="${equipo.certificado_calibracion}" download="Certificado_${equipo.serie}.pdf" class="btn">
-                            ⬇️ Descargar
-                        </a>
-                    </div>
-                    ` : ''}
-                    ${equipo.hoja_vida ? `
-                    <div class="documento-item">
-                        <span>📄 Hoja de Vida</span>
-                        <a href="${equipo.hoja_vida}" download="HojaVida_${equipo.serie}.pdf" class="btn">
-                            ⬇️ Descargar
-                        </a>
-                    </div>
-                    ` : ''}
-                `;
-            } else {
-                documentosContainer.innerHTML = '<p>No hay documentos registrados</p>';
-            }
-
-            // Generar QR
-            if (equipo.serie) {
-                document.getElementById("qr-image").src = 
-                    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                        `EQUIPO BIOMÉDICO\n\nSerie: ${equipo.serie}\nNombre: ${equipo.nombre}\nUbicación: ${equipo.ubicacion}`
-                    )}`;
-            }
+            // Generar QR con la serie
+            document.getElementById("qr-image").src = 
+                `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                    `SERIE: ${equipo.serie}\nEQUIPO: ${equipo.nombre}\nUBICACIÓN: ${equipo.ubicacion}`
+                )}`;
         });
-
-        // Función para formatear fechas
-        function formatFecha(fechaStr) {
-            if (!fechaStr) return 'N/A';
-            const opciones = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(fechaStr).toLocaleDateString('es-ES', opciones);
-        }
     </script>
 </body>
-<script type="module">
-    import { getEquipos, addEquipo } from './js/data.js';
-    // Ahora puedes usar las funciones normalmente
-    window.getEquipos = getEquipos;
-    window.addEquipo = addEquipo;
-    // ... otras funciones que necesites exponer
-  </script>
 </html>
+
 
 

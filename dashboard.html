@@ -11,15 +11,11 @@
         <h1>Equipos Biomédicos</h1>
         <nav>
             <a href="agregar_equipo.html" class="btn">➕ Agregar Equipo</a>
-            <button id="logoutBtn" class="btn btn-danger">🚪 Cerrar Sesión</button>
+            <a href="#" class="btn logout" onclick="logout()">🚪 Cerrar Sesión</a>
         </nav>
     </header>
 
     <main class="container">
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="🔍 Buscar por serie..." class="search-input">
-        </div>
-        
         <table class="equipos-table">
             <thead>
                 <tr>
@@ -38,39 +34,14 @@
         </table>
     </main>
 
-    <script type="module">
-        import { getEquipos, deleteEquipo, searchEquipos } from './js/data.js';
-        import { logout } from './js/auth.js';
-
-        // Función segura para obtener clases CSS
-        const getSafeClass = (value) => {
-            if (!value) return '';
-            return String(value).toLowerCase().replace(/[^a-z0-9]/g, '-');
-        };
-
-        // Función para formatear fecha
-        const formatDate = (dateString) => {
-            if (!dateString) return 'N/A';
-            try {
-                return new Date(dateString).toLocaleDateString('es-ES');
-            } catch {
-                return 'N/A';
-            }
-        };
-
-        async function renderEquipos(equipos = []) {
+    <script src="js/data.js"></script>
+    <script>
+        function cargarEquipos() {
+            const equipos = getEquipos();
             const tbody = document.getElementById("equipos-body");
             
             if (equipos.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="no-data">
-                            No hay equipos registrados
-                            <br>
-                            <a href="agregar_equipo.html" class="btn">Agregar primer equipo</a>
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="7" class="no-data">No hay equipos registrados</td></tr>`;
                 return;
             }
 
@@ -79,62 +50,41 @@
                     <td>${equipo.serie}</td>
                     <td>${equipo.nombre}</td>
                     <td>${equipo.marca}</td>
-                    <td>
-                        <span class="estado ${getSafeClass(equipo.ubicacion)}">
-                            ${equipo.ubicacion}
-                        </span>
+                    <td>${equipo.ubicacion}</td>
+                    <td><span class="estado ${equipo.condicion.toLowerCase().replace(' ', '-')}">${equipo.condicion}</span></td>
+                    <td class="${new Date(equipo.fecha_proximo) < new Date() ? 'vencido' : ''}">
+                        ${new Date(equipo.fecha_proximo).toLocaleDateString('es-ES')}
                     </td>
-                    <td>
-                        <span class="estado ${getSafeClass(equipo.condicion)}">
-                            ${equipo.condicion}
-                        </span>
-                    </td>
-                    <td class="${equipo.fecha_proximo && new Date(equipo.fecha_proximo) < new Date() ? 'vencido' : ''}">
-                        ${formatDate(equipo.fecha_proximo)}
-                    </td>
-                    <td>
+                    <td class="acciones">
                         <div class="botones-accion">
-                            <a href="detalle_equipo.html?id=${equipo.id}" class="btn btn-info">👁️</a>
-                            <a href="editar_equipo.html?id=${equipo.id}" class="btn btn-editar">✏️</a>
-                            <button onclick="eliminarEquipo('${equipo.id}')" class="btn btn-eliminar">🗑️</button>
+                            <a href="detalle_equipo.html?serie=${equipo.serie}" class="btn btn-info">👁️</a>
+                            <a href="editar_equipo.html?serie=${equipo.serie}" class="btn btn-editar">✏️</a>
+                            <button onclick="eliminarEquipo('${equipo.serie}')" class="btn btn-eliminar">🗑️</button>
                         </div>
                     </td>
                 </tr>
             `).join("");
         }
 
-        // Eventos
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const equipos = await getEquipos();
-                await renderEquipos(equipos);
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById("equipos-body").innerHTML = `
-                    <tr>
-                        <td colspan="7" class="error">
-                            Error al cargar equipos: ${error.message}
-                        </td>
-                    </tr>
-                `;
+        function eliminarEquipo(serie) {
+            if (confirm(`¿Eliminar el equipo con serie ${serie}?`)) {
+                deleteEquipo(serie);
+                cargarEquipos();
             }
-        });
+        }
 
-        document.getElementById("searchInput").addEventListener('input', async (e) => {
-            const term = e.target.value.trim();
-            const resultados = term ? await searchEquipos(term) : await getEquipos();
-            renderEquipos(resultados);
-        });
+        function logout() {
+            localStorage.removeItem('loggedIn');
+            window.location.href = 'login.html';
+        }
 
-        document.getElementById("logoutBtn").addEventListener('click', logout);
-
-        window.eliminarEquipo = async (id) => {
-            if (confirm('¿Eliminar este equipo?')) {
-                await deleteEquipo(id);
-                const equipos = await getEquipos();
-                renderEquipos(equipos);
-            }
-        };
+        // Iniciar
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'login.html';
+        } else {
+            document.addEventListener('DOMContentLoaded', cargarEquipos);
+        }
     </script>
 </body>
 </html>
+
