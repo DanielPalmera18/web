@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Equipos Biomédicos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Equipos Biomédicos</h1>
+        <nav>
+            <a href="agregar_equipo.html" class="btn">➕ Agregar Equipo</a>
+            <a href="#" class="btn logout" onclick="logout()">🚪 Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="🔍 Buscar equipo..." 
+                   oninput="buscarEquipos()">
+            <button class="btn" onclick="buscarEquipos()">Buscar</button>
+        </div>
+        
+        <div class="table-container">
+            <table class="equipos-table">
+                <thead>
+                    <tr>
+                        <th>Serie</th>
+                        <th>Nombre</th>
+                        <th>Marca</th>
+                        <th>Ubicación</th>
+                        <th>Condición</th>
+                        <th>Próximo Servicio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="equipos-body">
+                    <!-- Datos cargados dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script>
+        // Función para renderizar equipos
+        function renderEquipos(equipos = []) {
+            const tbody = document.getElementById("equipos-body");
+            
+            if (!equipos || equipos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            No hay equipos registrados
+                            <br>
+                            <a href="agregar_equipo.html" class="btn">Agregar primer equipo</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = equipos.map(equipo => {
+                const ubicacionClass = equipo.ubicacion ? 
+                    equipo.ubicacion.toLowerCase().replace(/[^a-z0-9]/g, '-') : '';
+                
+                const condicionClass = equipo.condicion ? 
+                    equipo.condicion.toLowerCase().replace(' ', '-') : '';
+                
+                return `
+                <tr>
+                    <td>${equipo.serie || 'N/A'}</td>
+                    <td>${equipo.nombre || 'N/A'}</td>
+                    <td>${equipo.marca || 'N/A'}</td>
+                    <td>
+                        <span class="estado ${ubicacionClass}">
+                            ${equipo.ubicacion || 'N/A'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="estado ${condicionClass}">
+                            ${equipo.condicion || 'N/A'}
+                        </span>
+                    </td>
+                    <td class="${equipo.fecha_proximo && new Date(equipo.fecha_proximo) < new Date() ? 'vencido' : ''}">
+                        ${equipo.fecha_proximo ? new Date(equipo.fecha_proximo).toLocaleDateString('es-ES') : 'N/A'}
+                    </td>
+                    <td>
+                        <div class="botones-accion">
+                            <a href="detalle_equipo.html?serie=${equipo.serie}" class="btn btn-info">👁️</a>
+                            <a href="editar_equipo.html?serie=${equipo.serie}" class="btn btn-editar">✏️</a>
+                            <button onclick="eliminarEquipo('${equipo.serie}')" class="btn btn-eliminar">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join("");
+        }
+
+        // Función de búsqueda
+        function buscarEquipos() {
+            const term = document.getElementById("search-input").value.trim();
+            const resultados = searchEquipos(term);
+            renderEquipos(resultados);
+        }
+
+        // Función para eliminar equipo
+        function eliminarEquipo(serie) {
+            if (confirm(`¿Estás seguro de eliminar el equipo ${serie}?`)) {
+                if (deleteEquipo(serie)) {
+                    alert("Equipo eliminado correctamente");
+                    buscarEquipos(); // Refrescar la vista
+                } else {
+                    alert("Error al eliminar el equipo");
+                }
+            }
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            localStorage.removeItem('loggedIn');
+            window.location.href = 'login.html';
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('loggedIn')) {
+                window.location.href = 'login.html';
+            } else {
+                // Cargar todos los equipos al inicio
+                renderEquipos(getEquipos());
+                
+                // Configurar búsqueda en tiempo real
+                document.getElementById("search-input").focus();
+            }
+        });
+    </script>
+</body>
+</html>

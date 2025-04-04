@@ -1,0 +1,336 @@
+/* ESTILOS GENERALES */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+/* HEADER */
+header {
+    background: #005f73;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+/* BOTONES */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #0a9396;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background: #005f73;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-editar {
+    background: #ff9f1c;
+}
+
+.btn-eliminar {
+    background: #e63946;
+}
+
+.btn-info {
+    background: #4361ee;
+}
+
+/* FORMULARIOS */
+fieldset {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+legend {
+    padding: 0 10px;
+    font-weight: bold;
+    color: #005f73;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.form-group input[type="file"] {
+    padding: 5px;
+}
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+/* TABLA */
+.equipos-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+.equipos-table th {
+    background: #0a9396;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.equipos-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.equipos-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* DETALLE EQUIPO */
+.detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.detalle-item {
+    margin-bottom: 15px;
+}
+
+.detalle-item label {
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.detalle-item span {
+    display: inline-block;
+    padding: 5px 0;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.qr-container {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+.qr-container img {
+    max-width: 200px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: white;
+}
+
+/* ESTADOS */
+.estado {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.operativo {
+    background: #2b9348;
+    color: white;
+}
+
+.en-mantenimiento {
+    background: #ff9f1c;
+    color: #000;
+}
+
+.dado-de-baja {
+    background: #d90429;
+    color: white;
+}
+
+/* Estilos para ubicaciones */
+.uci-adulto {
+    background: #3a86ff;
+    color: white;
+}
+
+.uci-neonatal-pediatrica {
+    background: #59ec38;
+    color: white;
+}
+
+.hemodinamia {
+    background: #ff006e;
+    color: white;
+}
+
+.laboratorio-clinico {
+    background: #fb5607;
+    color: white;
+}
+
+.microbiologia {
+    background: #ffbe0b;
+    color: #000;
+}
+
+.cirugia {
+    background: #3a86ff;
+    color: white;
+}
+
+.otro {
+    background: #8ac926;
+    color: #000;
+}
+
+.vencido {
+    color: #d90429;
+    font-weight: bold;
+}
+
+/* LOGIN */
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.login-container h1 {
+    color: #005f73;
+    margin-bottom: 30px;
+}
+
+/* BOTONES ACCIÓN */
+.botones-accion {
+    display: flex;
+    gap: 6px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* Barra de búsqueda */
+.search-bar {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .botones-accion {
+        flex-direction: column;
+    }
+    
+    .equipos-table {
+        font-size: 0.85rem;
+    }
+}
+/* Añade esto al final de tu archivo CSS */
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.no-data a {
+    margin-top: 15px;
+    display: inline-block;
+}
+
+/* Mejora para estados de ubicación */
+.estado {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Colores para ubicaciones */
+.uci-adulto { background: #3a86ff; color: white; }
+.uci-neonatal-pediatrica { background: #8338ec; color: white; }
+.hemodinamia { background: #ff006e; color: white; }
+.laboratorio-clinico { background: #fb5607; color: white; }
+.microbiologia { background: #ffbe0b; color: #000; }
+.cirugia { background: #3a86ff; color: white; }
+.otro { background: #8ac926; color: #000; }

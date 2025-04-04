@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Equipo - Equipos Biomédicos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Agregar Nuevo Equipo</h1>
+        <nav>
+            <a href="dashboard.html" class="btn">🔙 Volver</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <form id="form-equipo">
+            <fieldset>
+                <legend>📋 Información del Equipo</legend>
+                <div class="form-group">
+                    <label for="serie">Número de Serie*</label>
+                    <input type="text" id="serie" required placeholder="Ej: SN-2023-001">
+                </div>
+                <div class="form-group">
+                    <label for="nombre">Nombre del Equipo*</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="marca">Marca*</label>
+                    <input type="text" id="marca" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelo">Modelo*</label>
+                    <input type="text" id="modelo" required>
+                </div>
+                <div class="form-group">
+                    <label for="condicion">Condición*</label>
+                    <select id="condicion" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Operativo">Operativo</option>
+                        <option value="En mantenimiento">En mantenimiento</option>
+                        <option value="Dado de baja">Dado de baja</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación*</label>
+                    <select id="ubicacion" required>
+                        <option value="">Seleccione...</option>
+                        <option value="UCI Adulto">UCI Adulto</option>
+                        <option value="UCI Neonatal/Pediátrica">UCI Neonatal/Pediátrica</option>
+                        <option value="Hemodinamia">Hemodinamia</option>
+                        <option value="Laboratorio Clínico">Laboratorio Clínico</option>
+                        <option value="Microbiología">Microbiología</option>
+                        <option value="Cirugía">Cirugía</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>🛠️ Mantenimiento</legend>
+                <div class="form-group">
+                    <label for="fecha_servicio">Último Servicio Técnico*</label>
+                    <input type="date" id="fecha_servicio" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha_proximo">Próximo Servicio Técnico*</label>
+                    <input type="date" id="fecha_proximo" required>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>📄 Documentos</legend>
+                <div class="form-group">
+                    <label for="certificado">Certificado de Calibración (PDF)*</label>
+                    <input type="file" id="certificado" accept=".pdf" required>
+                </div>
+                <div class="form-group">
+                    <label for="hoja_vida">Hoja de Vida (PDF)*</label>
+                    <input type="file" id="hoja_vida" accept=".pdf" required>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn">💾 Guardar Equipo</button>
+        </form>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script>
+        document.getElementById("form-equipo").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            // Convertir archivos a Base64
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+
+            try {
+                const [certificado, hojaVida] = await Promise.all([
+                    toBase64(document.getElementById("certificado").files[0]),
+                    toBase64(document.getElementById("hoja_vida").files[0])
+                ]);
+
+                const equipo = {
+                    serie: document.getElementById("serie").value,
+                    nombre: document.getElementById("nombre").value,
+                    marca: document.getElementById("marca").value,
+                    modelo: document.getElementById("modelo").value,
+                    condicion: document.getElementById("condicion").value,
+                    ubicacion: document.getElementById("ubicacion").value,
+                    fecha_servicio: document.getElementById("fecha_servicio").value,
+                    fecha_proximo: document.getElementById("fecha_proximo").value,
+                    certificado_calibracion: certificado,
+                    hoja_vida: hojaVida,
+                    fecha_registro: new Date().toISOString()
+                };
+
+                if (addEquipo(equipo)) {
+                    alert("✅ Equipo registrado correctamente");
+                    window.location.href = "dashboard.html";
+                }
+            } catch (error) {
+                alert("❌ Error al procesar archivos: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
