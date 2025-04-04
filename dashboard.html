@@ -1,164 +1,140 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Equipos Biomédicos</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Equipos Biomédicos</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header>
-    <h1>Equipos Biomédicos</h1>
-    <nav>
-      <a href="agregar_equipo.html" class="btn">➕ Nuevo Equipo</a>
-      <button id="logoutBtn" class="btn btn-danger">🚪 Cerrar Sesión</button>
-    </nav>
-  </header>
+    <header>
+        <h1>Equipos Biomédicos</h1>
+        <nav>
+            <a href="agregar_equipo.html" class="btn">➕ Agregar Equipo</a>
+            <button id="logoutBtn" class="btn btn-danger">🚪 Cerrar Sesión</button>
+        </nav>
+    </header>
 
-  <main class="container">
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="🔍 Buscar por serie o nombre..." class="search-input">
-      <button id="clearSearch" class="btn">✕</button>
-    </div>
-
-    <div id="loading" class="loading">Cargando equipos...</div>
-    <div id="equipos-container" class="equipos-grid"></div>
-  </main>
-
-  <script type="module">
-    import { getEquipos, deleteEquipo, searchEquipos } from './js/data.js';
-    import { logout } from './js/auth.js';
-
-    // Elementos del DOM
-    const equiposContainer = document.getElementById('equipos-container');
-    const searchInput = document.getElementById('searchInput');
-    const clearSearch = document.getElementById('clearSearch');
-    const loading = document.getElementById('loading');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    // Cargar equipos al iniciar
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        showLoading();
-        const equipos = await getEquipos();
-        renderEquipos(equipos);
-      } catch (error) {
-        showError(error.message);
-      } finally {
-        hideLoading();
-      }
-    });
-
-    // Búsqueda en tiempo real
-    searchInput.addEventListener('input', async (e) => {
-      const term = e.target.value.trim();
-      if (term.length >= 2) {
-        try {
-          showLoading();
-          const resultados = await searchEquipos(term);
-          renderEquipos(resultados);
-        } catch (error) {
-          showError(error.message);
-        } finally {
-          hideLoading();
-        }
-      } else if (term.length === 0) {
-        loadAllEquipos();
-      }
-    });
-
-    // Limpiar búsqueda
-    clearSearch.addEventListener('click', () => {
-      searchInput.value = '';
-      loadAllEquipos();
-    });
-
-    // Logout
-    logoutBtn.addEventListener('click', logout);
-
-    // Funciones auxiliares
-    async function loadAllEquipos() {
-      try {
-        showLoading();
-        const equipos = await getEquipos();
-        renderEquipos(equipos);
-      } catch (error) {
-        showError(error.message);
-      } finally {
-        hideLoading();
-      }
-    }
-
-    function renderEquipos(equipos) {
-      if (!equipos || equipos.length === 0) {
-        equiposContainer.innerHTML = `
-          <div class="no-results">
-            <p>No se encontraron equipos</p>
-            <a href="agregar_equipo.html" class="btn">Agregar primer equipo</a>
-          </div>
-        `;
-        return;
-      }
-
-      equiposContainer.innerHTML = equipos.map(equipo => `
-        <div class="equipo-card">
-          <div class="equipo-header">
-            <span class="serie">${equipo.serie}</span>
-            <span class="estado ${equipo.condicion.toLowerCase().replace(' ', '-')}">
-              ${equipo.condicion}
-            </span>
-          </div>
-          <h3>${equipo.nombre}</h3>
-          <div class="equipo-details">
-            <p><strong>Marca:</strong> ${equipo.marca || 'N/A'}</p>
-            <p><strong>Ubicación:</strong> 
-              <span class="ubicacion ${equipo.ubicacion.toLowerCase().replace(' ', '-')}">
-                ${equipo.ubicacion}
-              </span>
-            </p>
-            <p><strong>Próximo servicio:</strong> ${equipo.fechaProximo}</p>
-          </div>
-          <div class="equipo-actions">
-            <a href="detalle_equipo.html?id=${equipo.id}" class="btn btn-info">Detalles</a>
-            <a href="editar_equipo.html?id=${equipo.id}" class="btn btn-warning">Editar</a>
-            <button onclick="confirmDelete('${equipo.id}')" class="btn btn-danger">Eliminar</button>
-          </div>
+    <main class="container">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar por serie..." class="search-input">
         </div>
-      `).join('');
-    }
+        
+        <table class="equipos-table">
+            <thead>
+                <tr>
+                    <th>Serie</th>
+                    <th>Nombre</th>
+                    <th>Marca</th>
+                    <th>Ubicación</th>
+                    <th>Condición</th>
+                    <th>Próximo Servicio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="equipos-body">
+                <!-- Datos cargados por JavaScript -->
+            </tbody>
+        </table>
+    </main>
 
-    function showLoading() {
-      loading.style.display = 'block';
-      equiposContainer.style.display = 'none';
-    }
+    <script type="module">
+        import { getEquipos, deleteEquipo, searchEquipos } from './js/data.js';
+        import { logout } from './js/auth.js';
 
-    function hideLoading() {
-      loading.style.display = 'none';
-      equiposContainer.style.display = 'grid';
-    }
+        // Función segura para obtener clases CSS
+        const getSafeClass = (value) => {
+            if (!value) return '';
+            return String(value).toLowerCase().replace(/[^a-z0-9]/g, '-');
+        };
 
-    function showError(message) {
-      equiposContainer.innerHTML = `
-        <div class="error-message">
-          <p>❌ ${message}</p>
-          <button onclick="location.reload()" class="btn">Reintentar</button>
-        </div>
-      `;
-    }
+        // Función para formatear fecha
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            try {
+                return new Date(dateString).toLocaleDateString('es-ES');
+            } catch {
+                return 'N/A';
+            }
+        };
 
-    window.confirmDelete = async (id) => {
-      if (confirm('¿Estás seguro de eliminar este equipo?')) {
-        try {
-          showLoading();
-          await deleteEquipo(id);
-          await loadAllEquipos();
-        } catch (error) {
-          showError('Error al eliminar equipo');
-        } finally {
-          hideLoading();
+        async function renderEquipos(equipos = []) {
+            const tbody = document.getElementById("equipos-body");
+            
+            if (equipos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            No hay equipos registrados
+                            <br>
+                            <a href="agregar_equipo.html" class="btn">Agregar primer equipo</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = equipos.map(equipo => `
+                <tr>
+                    <td>${equipo.serie}</td>
+                    <td>${equipo.nombre}</td>
+                    <td>${equipo.marca}</td>
+                    <td>
+                        <span class="estado ${getSafeClass(equipo.ubicacion)}">
+                            ${equipo.ubicacion}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="estado ${getSafeClass(equipo.condicion)}">
+                            ${equipo.condicion}
+                        </span>
+                    </td>
+                    <td class="${equipo.fecha_proximo && new Date(equipo.fecha_proximo) < new Date() ? 'vencido' : ''}">
+                        ${formatDate(equipo.fecha_proximo)}
+                    </td>
+                    <td>
+                        <div class="botones-accion">
+                            <a href="detalle_equipo.html?id=${equipo.id}" class="btn btn-info">👁️</a>
+                            <a href="editar_equipo.html?id=${equipo.id}" class="btn btn-editar">✏️</a>
+                            <button onclick="eliminarEquipo('${equipo.id}')" class="btn btn-eliminar">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join("");
         }
-      }
-    };
-  </script>
+
+        // Eventos
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const equipos = await getEquipos();
+                await renderEquipos(equipos);
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("equipos-body").innerHTML = `
+                    <tr>
+                        <td colspan="7" class="error">
+                            Error al cargar equipos: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        document.getElementById("searchInput").addEventListener('input', async (e) => {
+            const term = e.target.value.trim();
+            const resultados = term ? await searchEquipos(term) : await getEquipos();
+            renderEquipos(resultados);
+        });
+
+        document.getElementById("logoutBtn").addEventListener('click', logout);
+
+        window.eliminarEquipo = async (id) => {
+            if (confirm('¿Eliminar este equipo?')) {
+                await deleteEquipo(id);
+                const equipos = await getEquipos();
+                renderEquipos(equipos);
+            }
+        };
+    </script>
 </body>
 </html>

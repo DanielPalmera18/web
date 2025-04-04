@@ -1,4 +1,3 @@
-// Importaciones Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
 import { 
   getFirestore, collection, addDoc, getDocs, 
@@ -8,45 +7,54 @@ import {
   getStorage, ref, uploadBytes, getDownloadURL 
 } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js";
 
-// Configuración EXACTA para tu proyecto
 const firebaseConfig = {
-  apiKey: "AIzaSyDqY7vRjHkXk9X7Q2Zq3Y6w3Xv0ZxYyXxX", // Reemplaza con tu API Key real
+  apiKey: "TU_API_KEY_REAL",
   authDomain: "equiposbiomedicos-b03f1.firebaseapp.com",
   projectId: "equiposbiomedicos-b03f1",
   storageBucket: "equiposbiomedicos-b03f1.appspot.com",
   messagingSenderId: "599755378621",
-  appId: "1:599755378621:web:abcd1234" // Reemplaza con tu App ID real
+  appId: "TU_APP_ID_REAL"
 };
 
-// Inicialización
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Funciones CRUD Mejoradas
+// Función segura para formatear texto
+const safeFormat = (text) => {
+  return text ? String(text).toLowerCase().replace(/\s+/g, '-') : '';
+};
+
 export async function getEquipos() {
   try {
-    const querySnapshot = await getDocs(collection(db, "equipos"));
-    return querySnapshot.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data(),
-      // Formatea fechas para mostrar
-      fechaServicio: doc.data().fecha_servicio ? new Date(doc.data().fecha_servicio).toLocaleDateString('es-ES') : 'N/A',
-      fechaProximo: doc.data().fecha_proximo ? new Date(doc.data().fecha_proximo).toLocaleDateString('es-ES') : 'N/A'
-    }));
+    const snapshot = await getDocs(collection(db, "equipos"));
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        serie: data.serie || 'N/A',
+        nombre: data.nombre || 'N/A',
+        marca: data.marca || 'N/A',
+        modelo: data.modelo || 'N/A',
+        condicion: data.condicion || 'No especificado',
+        ubicacion: data.ubicacion || 'No especificado',
+        fecha_servicio: data.fecha_servicio || '',
+        fecha_proximo: data.fecha_proximo || '',
+        certificadoURL: data.certificadoURL || '',
+        hojaVidaURL: data.hojaVidaURL || ''
+      };
+    });
   } catch (error) {
     console.error("Error al obtener equipos:", error);
-    throw new Error("No se pudieron cargar los equipos");
+    return [];
   }
 }
 
 export async function addEquipo(equipo) {
   try {
     // Validación de campos requeridos
-    if (!equipo.serie || !equipo.nombre) {
-      throw new Error("Serie y Nombre son campos obligatorios");
-    }
-
+    if (!equipo.serie) throw new Error("El número de serie es obligatorio");
+    
     // Subir archivos si existen
     if (equipo.certificadoFile) {
       equipo.certificadoURL = await uploadFile(equipo.certificadoFile, `certificados/${equipo.serie}`);
@@ -55,13 +63,8 @@ export async function addEquipo(equipo) {
       equipo.hojaVidaURL = await uploadFile(equipo.hojaVidaFile, `hojas-vida/${equipo.serie}`);
     }
 
-    // Guardar en Firestore
-    const docRef = await addDoc(collection(db, "equipos"), {
-      ...equipo,
-      fecha_registro: new Date().toISOString()
-    });
-    
-    return { id: docRef.id, ...equipo };
+    const docRef = await addDoc(collection(db, "equipos"), equipo);
+    return docRef.id;
   } catch (error) {
     console.error("Error al agregar equipo:", error);
     throw error;
@@ -69,47 +72,25 @@ export async function addEquipo(equipo) {
 }
 
 async function uploadFile(file, path) {
-  try {
-    const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
-  } catch (error) {
-    console.error("Error al subir archivo:", error);
-    throw new Error("No se pudo subir el archivo");
-  }
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
 }
 
 export async function deleteEquipo(id) {
-  try {
-    await deleteDoc(doc(db, "equipos", id));
-    return true;
-  } catch (error) {
-    console.error("Error al eliminar equipo:", error);
-    throw new Error("No se pudo eliminar el equipo");
-  }
+  await deleteDoc(doc(db, "equipos", id));
 }
 
 export async function updateEquipo(id, nuevosDatos) {
-  try {
-    await updateDoc(doc(db, "equipos", id), nuevosDatos);
-    return true;
-  } catch (error) {
-    console.error("Error al actualizar equipo:", error);
-    throw new Error("No se pudo actualizar el equipo");
-  }
+  await updateDoc(doc(db, "equipos", id), nuevosDatos);
 }
 
 export async function searchEquipos(termino) {
-  try {
-    const q = query(
-      collection(db, "equipos"),
-      where("serie", ">=", termino),
-      where("serie", "<=", termino + '\uf8ff')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.error("Error al buscar equipos:", error);
-    throw new Error("Error en la búsqueda");
-  }
+  const q = query(
+    collection(db, "equipos"),
+    where("serie", ">=", termino),
+    where("serie", "<=", termino + '\uf8ff')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
